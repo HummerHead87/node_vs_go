@@ -17,16 +17,6 @@ type BinanceSymbol struct {
 }
 
 func main() {
-	coinsType := [...]string{"BTC",
-		"BNB",
-		"ETH",
-		"PAX",
-		"USDC",
-		"USDT",
-		"TUSD",
-		"USDS",
-		"XRP"}
-
 	prices, err := getBinanceExchanges()
 	if err != nil {
 		fmt.Println(err)
@@ -38,18 +28,9 @@ func main() {
 
 	for i, p := range prices {
 		if price, err := strconv.ParseFloat(p.Price, 64); err == nil {
-			for _, coin := range coinsType {
-				re := regexp.MustCompile(fmt.Sprintf("(.*)(%s$)", coin))
-				if match := re.FindAllStringSubmatch(p.Symbol, 1); match != nil {
-					pair := fmt.Sprintf("%s_%s", match[0][1], match[0][2])
-
-					result[i] = BinanceSymbol{
-						pair:  pair,
-						price: price,
-					}
-
-					break
-				}
+			result[i] = BinanceSymbol{
+				pair:  _spitSymbolStr(p.Symbol),
+				price: price,
 			}
 		}
 	}
@@ -57,6 +38,30 @@ func main() {
 	sort.Slice(result, func(i, j int) bool { return result[i].pair < result[j].pair })
 	fmt.Println(time.Since(start))
 	// fmt.Println(result)
+}
+
+func _spitSymbolStr(symbol string) string {
+	coinsType := [...]string{"BTC",
+		"BNB",
+		"ETH",
+		"PAX",
+		"USDC",
+		"USDT",
+		"TUSD",
+		"USDS",
+		"XRP"}
+	var result string
+
+	for _, coin := range coinsType {
+		re := regexp.MustCompile(fmt.Sprintf("(.*)(%s$)", coin))
+		if match := re.FindAllStringSubmatch(symbol, 1); match != nil {
+			result = fmt.Sprintf("%s_%s", match[0][1], match[0][2])
+
+			break
+		}
+	}
+
+	return result
 }
 
 func getBinanceExchanges() ([]*binance.SymbolPrice, error) {
