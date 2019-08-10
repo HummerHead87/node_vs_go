@@ -6,13 +6,24 @@ const Binance = require('binance-api-node').default
 
 const client = Binance()
 
+const coinsType = [
+  'BTC',
+  'BNB',
+  'ETH',
+  'PAX',
+  'USDC',
+  'USDT',
+  'TUSD',
+  'USDS',
+  'XRP'
+]
 
 getPairs()
 // getExchanges()
 
 async function getPairs() {
   const prices = await client.prices()
-  
+
   const date = new Date()
   let pairs = []
   forEach(prices, (priceStr, symbol) => {
@@ -26,25 +37,13 @@ async function getPairs() {
 
   pairs = sortBy(pairs, o => o.pair)
 
-  console.log('Time: ', new Date - date)
+  console.log('Time: ', new Date() - date)
   // console.log(pairs)
   // const keysLength = Object.keys(prices).map(key => key.length)
   // console.log(max(keysLength))
 }
 
 function splitSymbol(symbol) {
-  const coinsType = [
-    'BTC',
-    'BNB',
-    'ETH',
-    'PAX',
-    'USDC',
-    'USDT',
-    'TUSD',
-    'USDS',
-    'XRP'
-  ]
-
   let result
 
   coinsType.some(coin => {
@@ -53,6 +52,23 @@ function splitSymbol(symbol) {
 
     if (matched) {
       result = [matched[1], matched[2]].join('_')
+      return true
+    }
+
+    return false
+  })
+
+  return result
+}
+
+function splitSymbol2(symbol) {
+  let result
+
+  coinsType.some(coin => {
+    if (symbol.endsWith(coin)) {
+      const i = symbol.length - coin.length
+      result = [symbol.slice(0, i), '_', symbol.slice(i)].join('')
+
       return true
     }
 
