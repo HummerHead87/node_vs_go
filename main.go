@@ -6,10 +6,22 @@ import (
 	"regexp"
 	"sort"
 	"strconv"
+	"strings"
 	"time"
+	"unicode/utf8"
 
 	"github.com/adshao/go-binance"
 )
+
+var coinsType = [...]string{"BTC",
+	"BNB",
+	"ETH",
+	"PAX",
+	"USDC",
+	"USDT",
+	"TUSD",
+	"USDS",
+	"XRP"}
 
 type BinanceSymbol struct {
 	pair  string
@@ -29,7 +41,7 @@ func main() {
 	for i, p := range prices {
 		if price, err := strconv.ParseFloat(p.Price, 64); err == nil {
 			result[i] = BinanceSymbol{
-				pair:  _spitSymbolStr(p.Symbol),
+				pair:  _splitSymbolStr2(p.Symbol),
 				price: price,
 			}
 		}
@@ -40,16 +52,7 @@ func main() {
 	// fmt.Println(result)
 }
 
-func _spitSymbolStr(symbol string) string {
-	coinsType := [...]string{"BTC",
-		"BNB",
-		"ETH",
-		"PAX",
-		"USDC",
-		"USDT",
-		"TUSD",
-		"USDS",
-		"XRP"}
+func _splitSymbolStr(symbol string) string {
 	var result string
 
 	for _, coin := range coinsType {
@@ -58,6 +61,20 @@ func _spitSymbolStr(symbol string) string {
 			result = fmt.Sprintf("%s_%s", match[0][1], match[0][2])
 
 			break
+		}
+	}
+
+	return result
+}
+
+func _splitSymbolStr2(symbol string) string {
+	var result string
+
+	for _, coin := range coinsType {
+		if strings.HasSuffix(symbol, coin) {
+			i := utf8.RuneCountInString(symbol) - utf8.RuneCountInString(coin)
+			symbolSlice := []rune(symbol)
+			return string(append(symbolSlice[:i], append([]rune{'_'}, symbolSlice[i:]...)...))
 		}
 	}
 
