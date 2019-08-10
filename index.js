@@ -6,17 +6,7 @@ const Binance = require('binance-api-node').default
 
 const client = Binance()
 
-const coinsType = [
-  'BTC',
-  'BNB',
-  'ETH',
-  'PAX',
-  'USDC',
-  'USDT',
-  'TUSD',
-  'USDS',
-  'XRP'
-]
+
 getPairs()
 // getExchanges()
 
@@ -26,22 +16,12 @@ async function getPairs() {
   const date = new Date()
   let pairs = []
   forEach(prices, (priceStr, symbol) => {
-    coinsType.some(coin => {
-      const regexp = new RegExp(`(.*)(${coin}$)`)
-      const matched = symbol.match(regexp)
+    const pair = {
+      pair: splitSymbol(symbol),
+      price: parseFloat(priceStr)
+    }
 
-      if (matched) {
-        const pair = {
-          pair: [matched[1], matched[2]].join('_'),
-          price: parseFloat(priceStr)
-        }
-
-        pairs.push(pair)
-        return true
-      }
-
-      return false
-    })
+    pairs.push(pair)
   })
 
   pairs = sortBy(pairs, o => o.pair)
@@ -50,6 +30,36 @@ async function getPairs() {
   // console.log(pairs)
   // const keysLength = Object.keys(prices).map(key => key.length)
   // console.log(max(keysLength))
+}
+
+function splitSymbol(symbol) {
+  const coinsType = [
+    'BTC',
+    'BNB',
+    'ETH',
+    'PAX',
+    'USDC',
+    'USDT',
+    'TUSD',
+    'USDS',
+    'XRP'
+  ]
+
+  let result
+
+  coinsType.some(coin => {
+    const regexp = new RegExp(`(.*)(${coin}$)`)
+    const matched = symbol.match(regexp)
+
+    if (matched) {
+      result = [matched[1], matched[2]].join('_')
+      return true
+    }
+
+    return false
+  })
+
+  return result
 }
 
 async function getExchanges() {
